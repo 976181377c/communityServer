@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.spring.mapper.GetInfoMapper">
+    <resultMap id="Questions" type="com.example.spring.bean.Questions">
+<!--        <result column="id" jdbcType="VARCHAR" property="id" />-->
+<!--        <result column="uid" jdbcType="VARCHAR" property="uid" />-->
+<!--        <result column="name" jdbcType="VARCHAR" property="name" />-->
+<!--        <result column="title" jdbcType="VARCHAR" property="title" />-->
+<!--        <result column="avatar" jdbcType="VARCHAR" property="avatar" />-->
+<!--        <result column="replies" jdbcType="VARCHAR" property="replies" />-->
+<!--        <result column="collections" jdbcType="VARCHAR" property="collections" />-->
+<!--        <result column="description" jdbcType="VARCHAR" property="description" />-->
+<!--        <result column="content" jdbcType="VARCHAR" property="content" />-->
+<!--        <result column="html" jdbcType="VARCHAR" property="html" />-->
+<!--        <result column="create_time" jdbcType="VARCHAR" property="create_time" />-->
+
+    </resultMap>
+
+    <resultMap id="replyMap" type="com.example.spring.bean.reply">
+        <result column="id" jdbcType="INTEGER" property="id"/>
+        <result column="qid" jdbcType="INTEGER" property="qid"/>
+        <result column="uid" jdbcType="INTEGER" property="uid"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="avatar" jdbcType="VARCHAR" property="avatar"/>
+        <result column="html" jdbcType="VARCHAR" property="html"/>
+        <result column="create_time" jdbcType="VARCHAR" property="create_time"/>
+        <collection property="reply" column="id" javaType="ArrayList"
+                    ofType="com.example.spring.bean.replyInReply" select="getReplyInReply"/>
+    </resultMap>
+
+    <resultMap id="replyInReplyMap" type="com.example.spring.bean.replyInReply">
+        <result column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="uid" jdbcType="VARCHAR" property="uid"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="ruid" jdbcType="VARCHAR" property="ruid"/>
+        <result column="rname" jdbcType="VARCHAR" property="rname"/>
+        <result column="avatar" jdbcType="VARCHAR" property="avatar"/>
+        <result column="content" jdbcType="VARCHAR" property="content"/>
+        <result column="create_time" jdbcType="VARCHAR" property="create_time"/>
+    </resultMap>
+
+    <resultMap id="message" type="com.example.spring.bean.message">
+<!--        <result column="id" jdbcType="VARCHAR" property="id"/>-->
+<!--        <result column="uid" jdbcType="VARCHAR" property="uid"/>-->
+<!--        <result column="name" jdbcType="VARCHAR" property="name"/>-->
+<!--        <result column="ruid" jdbcType="VARCHAR" property="ruid"/>-->
+<!--        <result column="rname" jdbcType="VARCHAR" property="rname"/>-->
+<!--        <result column="avatar" jdbcType="VARCHAR" property="avatar"/>-->
+<!--        <result column="content" jdbcType="VARCHAR" property="content"/>-->
+<!--        <result column="create_time" jdbcType="VARCHAR" property="create_time"/>-->
+    </resultMap>
+
+    
+    <select id="selectPortalPage" parameterType="int" resultMap="Questions"  >
+        SELECT *
+        FROM questionView
+        WHERE status ='normal'
+        LIMIT #{start},#{page};
+    </select>
+    <select id="selectQuestion" parameterType="java.lang.String" resultMap="Questions" >
+        SELECT *
+        FROM questionView
+        WHERE id = #{id}
+    </select>
+    <select id="selectReply"   resultMap="replyMap">
+        SELECT r.id,r.qid, u.uid, u.name,u.avatar,r.html,r.create_time
+        FROM user_info as u,reply as r
+        WHERE r.uid = u.uid and r.qid = #{id}
+        LIMIT #{start},#{page};
+    </select>
+<!--    <select id="selectLike" parameterType="java.lang.String" resultType="java.lang.String">-->
+<!--        SELECT *-->
+<!--        FROM `like`-->
+<!--        WHERE qid =#{qid} and uid=#{uid}-->
+<!--    </select>-->
+<!--    <select id="selectCollection" parameterType="java.lang.String" resultType="java.lang.String">-->
+<!--        SELECT *-->
+<!--        FROM `collection`-->
+<!--        WHERE qid =#{qid} and uid=#{uid}-->
+<!--    </select>-->
+
+    <select id="getReplyInReply"  resultMap="replyInReplyMap">
+        SELECT
+            ri.id,
+            ri.rid,
+            u.uid,
+            u.name,
+            ri.ruid,
+            ri.rname,
+            u.avatar,
+            ri.content,
+            ri.content,
+            ri.create_time
+        FROM
+            replay_in_replay AS ri ,
+            user_info AS u
+        WHERE
+            ri.rid = #{id} and ri.uid = u.uid
+    </select>
+    <select id="getMessage"  resultMap="message">
+        SELECT
+            m.*,
+            q.title,
+            u.`name` AS uname,
+        u.avatar AS avatar
+        FROM
+            message AS m,
+            questions AS q,
+            user_info AS u
+        WHERE
+            m.qid = q.id
+          AND m.ruid = #{id}
+          AND u.uid = m.uid
+    </select>
+
+
+</mapper>
